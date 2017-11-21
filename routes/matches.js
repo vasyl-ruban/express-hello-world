@@ -5,60 +5,72 @@ const { JSDOM } = jsdom;
 const fetch = require('node-fetch');
 
 const formatTeamName = (teamName) => teamName.replace('vs.', '').trim();
+const firstTeamTag = (teamPage) => formatTeamName(teamPage.querySelector('.widget-matches-opp1').textContent);
+const secondTeamTag = (teamPage) => formatTeamName(teamPage.querySelector('.widget-matches-opp2').textContent);
+const isPast = (teamPage) => !isLive(teamPage) && !isFuture(teamPage);
+const isLive = (teamPage) => !!teamPage.querySelector('.widget-matches-score-live');
+const isFuture = (teamPage) => !!teamPage.querySelector('.widget-matches-score-time');
+const firstTeamScore = (teamPage) => isPast(teamPage) ? teamPage.querySelectorAll('.widget-matches-score font')[0].textContent : 0;
+const secondTeamScore = (teamPage) => isPast(teamPage) ? teamPage.querySelectorAll('.widget-matches-score font')[1].textContent : 0;
+const timeToStart = (teamPage) => isFuture(teamPage) ? teamPage.querySelector('.widget-matches-score-time').textContent : null;
+const matchPage = (teamPage) => {
+  let link = teamPage.querySelector('a').getAttribute('href');
+  link = link.split('/');
+  return link[link.length - 1];
+};
 
-class MatchInfo {
+async function getStreamLinks(matchPageUrl) {
+  let matchPage = await fetch(`https://www.joindota.com/en/matches/${matchPageUrl}`);
+  matchPage = await matchPage.text();
+  matchPage = new JSDOM(matchPage).window.document;
+  let streams = matchPage.querySelectorAll('.caster');
+  let streamersPages = [];
+  for(let i=0; i<streams.length; i++) {
+    let streamerPage = await fetch(streams[i].getAttribute('href'));
+    streamerPage = await streamerPage.text();
+    streamerPage = new JSDOM(streamerPage).window.document;
 
-  constructor(dom) {
-    this.dom = dom;
-
-    console.log('isLive', this.isLive);
-    console.log('isFuture', this.isFuture);
-    console.log('isPast', this.isPast);
+    streamersPages.push({
+      streamerName: streamerPage.querySelector('h1').textContent,
+      streamLink: streamerPage.querySelector('#live_stream_embed').getAttribute('src'),
+      chatLink: streamerPage.querySelector('#live_chat_embed').getAttribute('src')
+    });
   }
 
-  get firstTeamTag() {
-    return formatTeamName(this.dom.querySelector('a .sub:nth-child(1)') && this.dom.querySelector('a .sub:nth-child(1)').textContent);
-  }
-
-  get secondTeamTag() {
-    return formatTeamName(this.dom.querySelector('a .sub:nth-child(2)') && this.dom.querySelector('a .sub:nth-child(2)').textContent);
-  }
-
-  get isPast() {
-    return !!this.dom.querySelector('.ticker_score_loss');
-  }
-
-  get isLive() {
-    return !!this.dom.querySelector('.ticker_score_live');
-  }
-
-  get isFuture() {
-    return !this.isPast && !this.isLive;
-  }
+  return streamersPages;
 }
-
 
 async function matchList(req, res, next) {
   let matchesPage = await fetch("https://www.joindota.com/en/matches");
   matchesPage = await matchesPage.text();
   matchesPage = (new JSDOM(matchesPage)).window.document;
 
-  let matchesBlocks = matchesPage.querySelectorAll('.pad .item');
+  let matchesBlocks = matchesPage.querySelectorAll('#in_matches_list li');
 
   let matches = [].map.call(matchesBlocks, (match) => {
-    match = new MatchInfo(match);
     return {
-      team_tag_1: match.firstTeamTag,
-      team_tag_2: match.secondTeamTag,
-      isPast: match.isPast,
-      isLive: match.isLive,
-      isFuture: match.isFuture
+      firstTeamTag: firstTeamTag(match),
+      secondTeamTag: secondTeamTag(match),
+      firstTeamScore: firstTeamScore(match),
+      secondTeamScore: secondTeamScore(match),
+      timeTOStart: timeToStart(match),
+      isPast: isPast(match),
+      isLive: isLive(match),
+      isFuture: isFuture(match),
+      matchPage: matchPage(match)
     };
   });
 
   res.json(matches);
 }
 
+async function streamList(req, res, next) {
+  let streamLinks = await getStreamLinks(req.params.matchUrl);
+  res.json(streamLinks);
+}
+
 router.get('/', matchList);
+
+router.get('/:matchUrl/streams', streamList);
 
 module.exports = router;
