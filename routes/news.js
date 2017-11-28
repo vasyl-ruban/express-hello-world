@@ -10,7 +10,7 @@ const feedList = [
   {
     feedId: 0,
     feedName: 'joinDOTA',
-    loader: joindota
+    loader: joindota,
   },
   {
     feedId: 1,
@@ -39,6 +39,14 @@ router.get('/feed/:feedId', async function (req, res, next) {
   let feedId = req.params.feedId;
   let feed = feedList[feedId];
   res.json(await feed.loader.getFeed());
+});
+
+router.get('/feed/:feedId/:articleId', async function (req, res, next) {
+  let feedId = req.params.feedId;
+  let articleId = req.params.articleId;
+  let feed = feedList[feedId];
+
+  res.send(await feed.loader.getArticle(articleId));
 });
 
 module.exports = router;

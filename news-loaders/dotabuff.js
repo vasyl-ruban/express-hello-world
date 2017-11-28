@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const { JSDOM } = require("jsdom");
 
 const dotabuffFeedUrl = 'http://www.dotabuff.com/blog';
+const dotabuffArticleUrl = 'http://www.dotabuff.com/blog/';
 
 const getTitle = (listItem) => listItem.querySelector('.headline').textContent;
 const getId = (listItem) => getLink(listItem).replace('http://www.dotabuff.com/blog/', '');
@@ -26,6 +27,12 @@ async function getFeed() {
   }));
 }
 
+async function getArticle(articleId) {
+  let page = await getPageDom(dotabuffArticleUrl + articleId);
+  return page.querySelector('.post').innerHTML;
+}
+
 module.exports = {
-  getFeed
+  getFeed,
+  getArticle
 };
