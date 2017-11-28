@@ -29,7 +29,9 @@ async function getFeed() {
 
 async function getArticle(articleId) {
   let page = await getPageDom(dotabuffArticleUrl + articleId);
-  return page.querySelector('.post').innerHTML;
+  let content = page.querySelector('.post').innerHTML;
+  content = content.replace(/href\=\"\//g, 'href="http://dotabuff.com/');
+  return content;
 }
 
 module.exports = {
