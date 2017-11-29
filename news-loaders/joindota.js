@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const { JSDOM } = require("jsdom");
 
 const joindotaFeedUrl = 'http://joindota.com/en/news/archive';
+const joindotaArticleUrl = 'http://joindota.com/en/news/';
 
 const getTitle = (listItem) => listItem.querySelectorAll('.sub')[1].textContent;
 const getDate = (listItem) => listItem.querySelectorAll('.sub')[0].textContent;
@@ -28,9 +29,16 @@ async function getFeed() {
   }));
 }
 
+async function getArticle(articleId) {
+  let page = await getPageDom(joindotaArticleUrl + articleId);
+  let article = page.querySelector('#content .pad');
+  console.log(joindotaArticleUrl + articleId);
+  return article.innerHTML;
+}
 
 const joindotaLoader = {
-  getFeed
+  getFeed,
+  getArticle
 };
 
 
