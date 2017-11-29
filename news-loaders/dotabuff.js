@@ -30,7 +30,8 @@ async function getFeed() {
 async function getArticle(articleId) {
   let page = await getPageDom(dotabuffArticleUrl + articleId);
   let content = page.querySelector('.post');
-  content.querySelector('.blog-ad').remove();
+  let adBlocks = content.querySelectorAll('.blog-ad');
+  adBlocks.forEach((block) => block.remove());
   content.innerHTML += `
     <style>
       .inline-icon {height: 17px;}
