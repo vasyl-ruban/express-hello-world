@@ -45,7 +45,7 @@ function convertArticle(article) {
   article.innerHTML += `
     <style>
       img {width: 100%}
-      img.inline-icon {height: 17px;}
+      img.inline-icon {height: 17px;width: auto;}
     </style>
   `;
 
