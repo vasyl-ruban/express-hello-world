@@ -33,6 +33,8 @@ async function getArticle(articleId) {
   let page = await getPageDom(joindotaArticleUrl + articleId);
   let article = page.querySelector('#content .pad');
   console.log(joindotaArticleUrl + articleId);
+  article.innerHTML += '<script id="twitter-wjs" src="https://platform.twitter.com/widgets.js"></script>';
+  article.innerHTML += '<style>img {width: 100%} img.flag {width: auto; height: 9px;} iframe {width: 100%}</style>';
   return article.innerHTML;
 }
 
