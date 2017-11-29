@@ -31,6 +31,11 @@ async function getArticle(articleId) {
   let page = await getPageDom(dotabuffArticleUrl + articleId);
   let content = page.querySelector('.post');
   content.querySelector('.blog-ad').remove();
+  content.innerHTML += `
+    <style>
+      .inline-icon {height: 17px;}
+    </style>
+  `;
   content = content.innerHTML.replace(/href\=\"\//g, 'href="http://dotabuff.com/');
   return content;
 }
