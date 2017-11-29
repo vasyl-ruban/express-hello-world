@@ -44,7 +44,8 @@ function convertArticle(article) {
   adBlocks.forEach((block) => block.remove());
   article.innerHTML += `
     <style>
-      .inline-icon {height: 17px;}
+      img {width: 100%}
+      img.inline-icon {height: 17px;}
     </style>
   `;
 
@@ -56,7 +57,7 @@ function convertArticle(article) {
 
     wget({
       url: imgUrl,
-      dest: './tasks/tmp/dotabuff/' + getRikiImageId(imgUrl) + '.png'
+      dest: '/var/www/staticdota/dotabuff/' + getRikiImageId(imgUrl) + '.png'
     });
 
     img.setAttribute('src', 'http://188.226.147.71:3030/dotabuff/' + getRikiImageId(imgUrl) + '.png');
