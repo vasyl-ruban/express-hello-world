@@ -11,7 +11,7 @@ async function getMatches() {
 router.get('/', async function (req, res, next) {
  let liveGames = await getMatches();
  liveGames.games.sort((a, b) => b.spectators - a.spectators);
- liveGames = liveGames.result.games.slice(0, 10);
+ liveGames = liveGames.games.slice(0, 10);
  res.json(liveGames);
 });
 
